@@ -1,49 +1,60 @@
-import { useState } from "react"
-import { format } from "date-fns"
-import { ptBR } from "date-fns/locale" // Importa a localidade pt-BR
+import { useState, useEffect } from "react"
 import { CalendarIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover"
 
-export function DatePicker(props) {
-    const { className, value, onChange } = props;
-    const [date, setDate]= useState(new Date(value) || new Date());
+export function DatePicker({ className, value, onChange }) {
+    const [date, setDate] = useState(value ? new Date(value) : null)
 
-    function onSelect(newDate){
-        setDate(newDate);
-        onChange(newDate);
+    useEffect(() => {
+        if (value) {
+        setDate(new Date(value))
+        }
+    }, [value])
+
+    function onSelect(newDate) {
+        setDate(newDate)
+        onChange?.(newDate)
     }
 
     return (
         <Popover>
-            <PopoverTrigger asChild>
-                <Button
-                    variant={"outline"}
-                    className={cn(
-                        `${className && className}`,
-                        "w-[200px] justify-start text-left font-normal",
-                        !date && "text-muted-foreground"
-                    )}
-                >
-                    <CalendarIcon />
-                    {date ? format(date, "d MMM yyyy", { locale: ptBR }) : <span>Escolha uma data</span>} {/* Alterei o formato da data para exibir o mês abreviado */}
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={onSelect}
-                    locale={ptBR}
-                />
-            </PopoverContent>
+        <PopoverTrigger asChild>
+            <Button
+            variant="outline"
+            className={cn(
+                "w-[200px] justify-start text-left font-normal",
+                !date && "text-muted-foreground",
+                className
+            )}
+            >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {date ? (
+                date.toLocaleDateString("en-US", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+                })
+            ) : (
+                <span>Choose a date</span>
+            )}
+            </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+            mode="single"
+            selected={date}
+            onSelect={onSelect}
+            initialFocus
+            />
+        </PopoverContent>
         </Popover>
     )
 }

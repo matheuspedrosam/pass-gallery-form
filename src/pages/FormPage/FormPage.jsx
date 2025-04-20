@@ -12,16 +12,19 @@ import ChangeThemeBtn from '@/components/ChangeThemeBtn/ChangeThemeBtn'
 import RightsReservedMessage from '@/components/RightsReservedMessage/RightsReservedMessage'
 import { useState } from 'react'
 import Loader from '@/components/Loader/Loader'
+import { DatePicker } from '@/components/ui/Custom/DatePicker/DatePicker'
 
 export default function FormPage() {
     return (
-        <PageContainer>
+        <PageContainer className="flex flex-col justify-between gap-4">
             <ChangeThemeBtn />
 
-            <FormContainer>
-                <FormTitle />
-                <NewClientForm />
-            </FormContainer>
+            <main className='grid grid-cols-[minmax(200px,500px)] justify-center items-center'>
+                <FormContainer>
+                    <FormTitle />
+                    <NewClientForm />
+                </FormContainer>
+            </main>
 
             <RightsReservedMessage />
         </PageContainer>
@@ -71,6 +74,7 @@ function NewClientForm() {
             name: "",
             email: "",
             phone: "",
+            meetingdate: new Date(),
         },
     })
 
@@ -79,27 +83,26 @@ function NewClientForm() {
     function onSubmit(data) {
         if (loading) return;
 
-        let name1 = name;
         setLoading(true);
+        let personName = data.name;
         try{
-            console.log({
-                name,
-                email,
-                phone
-            })
+            console.log(data)
 
             reset({
                 name: "",
                 email: "",
                 phone: "",
+                meetingdate: new Date(),
             })
         } catch(e){
-
+            toast.error(`Error!`, {
+                description: "Oh no, something happened, please try again later.",
+            })
         } finally {
             setLoading(false);
         }
 
-        toast.success(`Welcome ${name1}!`, {
+        toast.success(`Welcome ${personName}!`, {
             description: "Check your E-mail inbox.",
         })
     }
@@ -174,6 +177,24 @@ function NewClientForm() {
                             {!form.formState.errors.phone && (
                                 <FormDescription>
                                     Your phone number.
+                                </FormDescription>
+                            )}
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="meetingdate"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Meeting Date</FormLabel>
+                            <FormControl>
+                                <DatePicker {...field} className="!w-3/3" />
+                            </FormControl>
+                            {!form.formState.errors.meetingdate && (
+                                <FormDescription>
+                                    Select a date for our meeting
                                 </FormDescription>
                             )}
                             <FormMessage />
