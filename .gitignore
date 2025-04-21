@@ -2,6 +2,7 @@
 .firebase
 .firebaserc
 .firebase.json
+firebase.json
 
 #Env
 .env
