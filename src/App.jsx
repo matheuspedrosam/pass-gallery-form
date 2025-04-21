@@ -1,5 +1,4 @@
 import { Route, Routes } from 'react-router-dom'
-import './App.css'
 import { useState } from 'react'
 import Loader from './components/Loader/Loader'
 import { Toaster } from './components/ui/sonner'

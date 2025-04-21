@@ -13,18 +13,27 @@ import RightsReservedMessage from '@/components/RightsReservedMessage/RightsRese
 import { useState } from 'react'
 import Loader from '@/components/Loader/Loader'
 import { DatePicker } from '@/components/ui/Custom/DatePicker/DatePicker'
+import submitNewClient from './functions/submitNewClient'
 
 export default function FormPage() {
+    const [alreadySubmited, setAlreadySubmited] = useState(false);
+
     return (
         <PageContainer className="flex flex-col justify-between gap-4">
             <ChangeThemeBtn />
 
-            <main className='grid grid-cols-[minmax(200px,500px)] justify-center items-center'>
-                <FormContainer>
-                    <FormTitle />
-                    <NewClientForm />
-                </FormContainer>
-            </main>
+            {!alreadySubmited &&
+                <main className='grid grid-cols-[minmax(200px,500px)] justify-center items-center'>
+                    <FormContainer>
+                        <FormTitle />
+                        <NewClientForm setAlreadySubmited={setAlreadySubmited} />
+                    </FormContainer>
+                </main>
+            }
+
+            {alreadySubmited &&
+                <h1 className='text-3xl font-bold text-center'>That's All for now. We'll contact you soon!</h1>
+            }
 
             <RightsReservedMessage />
         </PageContainer>
@@ -63,9 +72,18 @@ const FormSchema = z.object({
     phone: z.string().regex(phoneRegex, {
         message: "Enter a valid US phone number.",
     }),
+    meetingDate: z
+        .date({
+            required_error: "Date is required.",
+            invalid_type_error: "Enter a valid date.",
+        })
+        .refine(
+            (date) => date.getHours() !== 0,
+            { message: "Select a valid time." }
+          ),
 })
 
-function NewClientForm() {
+function NewClientForm({ setAlreadySubmited }) {
     const [loading, setLoading] = useState(false)
 
     const form = useForm({
@@ -74,37 +92,39 @@ function NewClientForm() {
             name: "",
             email: "",
             phone: "",
-            meetingdate: new Date(),
+            meetingDate: null,
         },
     })
 
     const { reset } = form;
 
-    function onSubmit(data) {
+    async function onSubmit(data) {
         if (loading) return;
 
         setLoading(true);
         let personName = data.name;
-        try{
-            console.log(data)
-
+        try {
             reset({
                 name: "",
                 email: "",
                 phone: "",
-                meetingdate: new Date(),
+                meetingDate: null,
             })
-        } catch(e){
+
+            await submitNewClient(data);
+
+            setAlreadySubmited(true);
+            toast.success(`Welcome ${personName}!`, {
+                description: "Check your E-mail inbox.",
+            })
+        } catch (e) {
             toast.error(`Error!`, {
                 description: "Oh no, something happened, please try again later.",
             })
+            console.log(e);
         } finally {
             setLoading(false);
         }
-
-        toast.success(`Welcome ${personName}!`, {
-            description: "Check your E-mail inbox.",
-        })
     }
 
     return (
@@ -185,14 +205,14 @@ function NewClientForm() {
                 />
                 <FormField
                     control={form.control}
-                    name="meetingdate"
+                    name="meetingDate"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Meeting Date</FormLabel>
                             <FormControl>
-                                <DatePicker {...field} className="!w-3/3" />
+                                <DatePicker {...field} className="!w-full" />
                             </FormControl>
-                            {!form.formState.errors.meetingdate && (
+                            {!form.formState.errors.meetingDate && (
                                 <FormDescription>
                                     Select a date for our meeting
                                 </FormDescription>
